@@ -1,4 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_HADDOCK not-home #-}
 -- | Type-safe indexing for 'Effectful.Internal.Monad.Env'.
@@ -16,7 +17,10 @@ module Effectful.Internal.Effect
   , type (++)
   , KnownEffects(..)
 
-  -- * Re-exports
+    -- * Unique parametrized effects
+  , type (<:>)
+
+    -- * Re-exports
   , Type
   ) where
 
@@ -148,3 +152,52 @@ instance KnownEffects es => KnownEffects (e : es) where
 
 instance KnownEffects '[] where
   knownEffectsLength = 0
+
+----------------------------------------
+
+type family (e :: Effect) <:> (es :: [Effect]) :: Constraint where
+  e a1 a2 a3 a4 a5 <:> es = Has5UniqueParams e a1 a2 a3 a4 a5 es
+  e a1 a2 a3 a4 <:> es = Has4UniqueParams e a1 a2 a3 a4 es
+  e a1 a2 a3 <:> es = Has3UniqueParams e a1 a2 a3 es
+  e a1 a2 <:> es = Has2UniqueParams e a1 a2 es
+  e a1 <:> es = HasUniqueParam e a1 es
+
+class e a1 :> es => HasUniqueParam
+  (e :: k1 -> Effect)
+  (a1 :: k1)
+  (es :: [Effect])
+  | e es -> a1
+
+class e a1 a2 :> es => Has2UniqueParams
+  (e :: k1 -> k2 -> Effect)
+  (a1 :: k1)
+  (a2 :: k2)
+  (es :: [Effect])
+  | e es -> a1 a2
+
+class e a1 a2 a3 :> es => Has3UniqueParams
+  (e :: k1 -> k2 -> k3 -> Effect)
+  (a1 :: k1)
+  (a2 :: k2)
+  (a3 :: k3)
+  (es :: [Effect])
+  | e es -> a1 a2 a3
+
+class e a1 a2 a3 a4 :> es => Has4UniqueParams
+  (e :: k1 -> k2 -> k3 -> k4 -> Effect)
+  (a1 :: k1)
+  (a2 :: k2)
+  (a3 :: k3)
+  (a4 :: k4)
+  (es :: [Effect])
+  | e es -> a1 a2 a3 a4
+
+class e a1 a2 a3 a4 a5 :> es => Has5UniqueParams
+  (e :: k1 -> k2 -> k3 -> k4 -> k5 -> Effect)
+  (a1 :: k1)
+  (a2 :: k2)
+  (a3 :: k3)
+  (a4 :: k4)
+  (a5 :: k5)
+  (es :: [Effect])
+  | e es -> a1 a2 a3 a4 a5

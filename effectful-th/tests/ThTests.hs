@@ -4,6 +4,7 @@
 module Main where
 
 import Data.Kind (Type)
+import Data.String
 import GHC.TypeLits
 
 import Effectful
@@ -11,6 +12,21 @@ import Effectful.TH
 
 main :: IO ()
 main = pure () -- only compilation tests
+
+data Test1 a :: Effect where
+  Test1 :: Test1 a m a
+makeUniqueEffect ''Test1
+
+data Test2 a b :: Effect where
+  Test2 :: Test2 a b m (a, b)
+  AmbTest :: Test2 a b m ()
+makeUniqueEffect ''Test2
+
+test :: (Num n, IsString s, Test1 n <:> es, Test2 s Char <:> es) => Eff es ()
+test = do
+  _ <- test1
+  _ <- test2
+  ambTest
 
 data SimpleADT (m :: Type -> Type) (a :: Type)
   = SimpleADTC1 Int

@@ -5,6 +5,8 @@
 module Effectful.TH
   ( makeEffect
   , makeEffect_
+  , makeUniqueEffect
+  , makeUniqueEffect_
   ) where
 
 import Control.Monad
@@ -57,7 +59,7 @@ import Effectful.Dispatch.Dynamic
 -- If the constructor declaration has Haddock, then this is reused for the
 -- sending functions, otherwise a simple placeholder is used.
 makeEffect :: Name -> Q [Dec]
-makeEffect = makeEffectImpl True
+makeEffect = makeEffectImpl ''(:>) True
 
 -- | Like 'makeEffect', but doesn't generate type signatures. This is useful
 -- when you want to attach Haddock documentation to function signatures:
@@ -72,10 +74,16 @@ makeEffect = makeEffectImpl True
 --
 -- /Note:/ function signatures must be added /after/ the call to 'makeEffect_'.
 makeEffect_ :: Name -> Q [Dec]
-makeEffect_ = makeEffectImpl False
+makeEffect_ = makeEffectImpl ''(:>) False
 
-makeEffectImpl :: Bool -> Name -> Q [Dec]
-makeEffectImpl makeSig effName = do
+makeUniqueEffect :: Name -> Q [Dec]
+makeUniqueEffect = makeEffectImpl ''(<:>) True
+
+makeUniqueEffect_ :: Name -> Q [Dec]
+makeUniqueEffect_ = makeEffectImpl ''(<:>) False
+
+makeEffectImpl :: Name -> Bool -> Name -> Q [Dec]
+makeEffectImpl memberOp makeSig effName = do
   checkRequiredExtensions
   info <- reifyDatatype effName
   dispatch <- do
@@ -83,7 +91,7 @@ makeEffectImpl makeSig effName = do
     let dispatchE = ConT ''DispatchOf `AppT` e
         dynamic   = PromotedT 'Dynamic
     pure . TySynInstD $ TySynEqn Nothing dispatchE dynamic
-  ops <- traverse (makeCon makeSig) (constructorName <$> datatypeCons info)
+  ops <- traverse (makeCon memberOp makeSig) (constructorName <$> datatypeCons info)
   pure $ dispatch : concat (reverse ops)
   where
     getEff :: Type -> [Type] -> Q Type
@@ -109,8 +117,8 @@ makeEffectImpl makeSig effName = do
       _ -> pure ()
 
 -- | Generate a single definition of an effect operation.
-makeCon :: Bool -> Name -> Q [Dec]
-makeCon makeSig name = do
+makeCon :: Name -> Bool -> Name -> Q [Dec]
+makeCon memberOp makeSig name = do
   fixity <- reifyFixity name
   typ <- reify name >>= \case
     DataConI _ typ _ -> pure typ
@@ -194,7 +202,7 @@ makeCon makeSig name = do
            else VarE 'send `AppE`      effOp
 #endif
   let fnSig = ForallT actionVars
-        (ConT ''HasCallStack : UInfixT effTy ''(:>) esVar : actionCtx)
+        (ConT ''HasCallStack : UInfixT effTy memberOp esVar : actionCtx)
         (makeTyp esVar substM resTy actionParams)
 
   let mkDec fix =
