@@ -90,6 +90,9 @@ library
                      Effectful.Error.Static
                      Effectful.Exception
                      Effectful.Fail
+                     Effectful.Input.Dynamic
+                     Effectful.Input.Static.Action
+                     Effectful.Input.Static.Value
                      Effectful.Internal.Effect
                      Effectful.Internal.Env
                      Effectful.Internal.Monad
@@ -101,6 +104,10 @@ library
                      Effectful.Labeled.State
                      Effectful.Labeled.Writer
                      Effectful.NonDet
+                     Effectful.Output.Dynamic
+                     Effectful.Output.Static.Action
+                     Effectful.Output.Static.Array.Local
+                     Effectful.Output.Static.Array.Shared
                      Effectful.Prim
                      Effectful.Provider
                      Effectful.Provider.List
