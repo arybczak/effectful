@@ -115,16 +115,23 @@ library
     reexported-modules:    Effectful
                          , Effectful.Dispatch.Dynamic
                          , Effectful.Dispatch.Static
-                         , Effectful.Error.Static
                          , Effectful.Error.Dynamic
+                         , Effectful.Error.Static
                          , Effectful.Exception
                          , Effectful.Fail
+                         , Effectful.Input.Dynamic
+                         , Effectful.Input.Static.Action
+                         , Effectful.Input.Static.Value
                          , Effectful.Labeled
                          , Effectful.Labeled.Error
                          , Effectful.Labeled.Reader
                          , Effectful.Labeled.State
                          , Effectful.Labeled.Writer
                          , Effectful.NonDet
+                         , Effectful.Output.Dynamic
+                         , Effectful.Output.Static.Action
+                         , Effectful.Output.Static.Array.Local
+                         , Effectful.Output.Static.Array.Shared
                          , Effectful.Prim
                          , Effectful.Provider
                          , Effectful.Provider.List
